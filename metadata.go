@@ -31,13 +31,14 @@ type (
 	}
 
 	propDef struct {
-		Name               string `yaml:"name"`
-		Type               string `yaml:"type"`
-		Length             int    `yaml:"length"`
-		IsVirtual          bool   `yaml:"isVirtual"`
-		IsKey              bool   `yaml:"isKey"`
-		IsUnique           bool   `yaml:"isUnique"`
-		AdmitNull          bool   `yaml:"admitNull"`
+		Name               string  `yaml:"name"`
+		Type               string  `yaml:"type"`
+		Length             int     `yaml:"length"`
+		IsVirtual          bool    `yaml:"isVirtual"`
+		IsKey              bool    `yaml:"isKey"`
+		IsUnique           bool    `yaml:"isUnique"`
+		AdmitNull          bool    `yaml:"admitNull"`
+		Ref                propRef `yaml:"references"`
 		ModelType          string
 		SafeType           string
 		SafeTypeMaker      string
@@ -49,6 +50,13 @@ type (
 		SQLType            string
 		SQLModifier        string
 		Value              interface{}
+	}
+
+	propRef struct {
+		Model    string `yaml:"model"`
+		Property string `yaml:"property"`
+		FKName   string
+		TrgTable string
 	}
 )
 
