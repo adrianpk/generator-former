@@ -9,6 +9,15 @@ Not usable yet.
 
 ```shell
 $ go get -u https://gitlab.com/mikrowezel/backend/generator
+$ alias mw=generator
+```
+
+Another option to avoid aliasing generator command.
+
+```shell
+$ git clone https://gitlab.com/mikrowezel/backend/generator.git
+$ cd generator
+$ make install
 ```
 
 ## Usage
