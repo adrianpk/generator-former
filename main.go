@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/hashicorp/hcl"
+	"gopkg.in/yaml.v2"
 )
 
 type (
@@ -28,8 +28,6 @@ type (
 		data     []byte
 		metadata *metadata
 	}
-
-	metadata struct{}
 )
 
 var (
@@ -125,6 +123,11 @@ func (g *gen) genMetada() error {
 		return err
 	}
 
+	err = g.procMetadata()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -141,11 +144,13 @@ func (g *gen) readFile() error {
 }
 
 func (g *gen) parseData() error {
-	_, err := hcl.Parse(string(g.data))
+	md := metadata{}
+	err := yaml.Unmarshal(g.data, &md)
 	if err != nil {
 		return err
 	}
 
+	g.metadata = &md
 	return nil
 }
 
