@@ -12,7 +12,7 @@ $ go get -u https://gitlab.com/mikrowezel/backend/generator
 $ alias mw=generator
 ```
 
-Another option to avoid aliasing generator command.
+Another option to avoid alias
 
 ```shell
 $ git clone https://gitlab.com/mikrowezel/backend/generator.git
