@@ -139,6 +139,8 @@ func (g *gen) readFile() error {
 		return fmt.Errorf("Cannot read input file: %s", g.input)
 	}
 
+	log.Printf("%s", string(g.data))
+
 	g.data = data
 	return nil
 }
