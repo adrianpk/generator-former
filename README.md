@@ -25,6 +25,6 @@ $ make install
 $ mw help
 ...
 
-$ mw generate -all resource_name.hcl
+$ mw generate resource_name.hcl -all
 ...
 ```
