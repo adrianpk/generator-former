@@ -1,12 +1,14 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 
+	"github.com/davecgh/go-spew/spew"
 	"gopkg.in/yaml.v2"
 )
 
@@ -31,7 +33,10 @@ type (
 )
 
 var (
-	commands = []string{"generate", "help"}
+	generateCmd = "generate"
+	helpCmd     = "help"
+
+	commands = []string{generateCmd, helpCmd}
 )
 
 func main() {
@@ -41,7 +46,6 @@ func main() {
 	}
 
 	var g gen
-	g.command = args[0]
 
 	flag.BoolVar(&g.handler, "handler", false, "Generate handler and associated files.")
 	flag.BoolVar(&g.migration, "migration", false, "Generate migration file.")
@@ -50,18 +54,24 @@ func main() {
 	flag.BoolVar(&g.restcl, "restcl", false, "Generate REST cURL invocation shell scripts.")
 	flag.BoolVar(&g.test, "test", false, "Generate handler integration test suite.")
 	flag.BoolVar(&g.all, "all", true, "Generate all resource files.")
-	flag.StringVar(&g.input, "input", "", "HCL input file.")
 	flag.BoolVar(&g.force, "force", false, "Overwrite output files.")
 	flag.Parse()
 
 	noCmd := true
 
-	if !g.validCommand(g.command) {
-		noCmd = noCmd && false
-		panic("Run 'mw help' to see a list of valid commands")
+	err := g.setCmd(args[0])
+	if err != nil {
+		log.Println(err.Error())
+		log.Fatal("Run 'mw help' to see a list of available commands")
 	}
 
-	err := g.genMetada()
+	err = g.setCmdArgs(g.command, args)
+	if err != nil {
+		log.Println(err.Error())
+		log.Fatal("Incomplete argument list")
+	}
+
+	err = g.genMeta()
 	if err != nil {
 		log.Println(err.Error())
 	}
@@ -103,16 +113,27 @@ func main() {
 
 }
 
-func (g *gen) validCommand(cmd string) (ok bool) {
+func (g *gen) setCmd(cmd string) error {
 	for _, v := range commands {
 		if v == cmd {
-			return true
+			g.command = cmd
+			return nil
 		}
 	}
-	return false
+
+	return errors.New("no command specified")
 }
 
-func (g *gen) genMetada() error {
+func (g *gen) setCmdArgs(cmd string, args []string) error {
+	if cmd == generateCmd && (len(args) < 2 || args[1] == "") {
+		return errors.New("no input file specified")
+	}
+
+	g.input = args[1]
+	return nil
+}
+
+func (g *gen) genMeta() error {
 	err := g.readFile()
 	if err != nil {
 		return err
@@ -139,18 +160,20 @@ func (g *gen) readFile() error {
 		return fmt.Errorf("Cannot read input file: %s", g.input)
 	}
 
-	log.Printf("%s", string(g.data))
-
 	g.data = data
+
 	return nil
 }
 
 func (g *gen) parseData() error {
+	log.Println("Generating metadata")
 	md := metadata{}
 	err := yaml.Unmarshal(g.data, &md)
 	if err != nil {
 		return err
 	}
+
+	log.Println(spew.Sdump(md))
 
 	g.metadata = &md
 	return nil
