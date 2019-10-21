@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 	"gopkg.in/yaml.v2"
@@ -16,8 +17,8 @@ type (
 	gen struct {
 		cmd    string
 		target string
+		using  string
 
-		using string
 		force bool
 
 		data     []byte
@@ -43,22 +44,21 @@ var (
 )
 
 func main() {
-	var g gen
+	g := &gen{}
 
 	args := os.Args[1:]
 
-	flag.StringVar(&g.using, "using", "", "Input file.")
 	flag.BoolVar(&g.force, "force", false, "Overwrite output files.")
 	flag.Parse()
 
-	err := g.setCmdAndTarget(args)
+	err := g.setup(args)
 	if err != nil {
-		log.Println(err.Error())
+		log.Println(errMsg(err))
 	}
 
 	err = g.genMeta()
 	if err != nil {
-		log.Println(err.Error())
+		log.Println(errMsg(err))
 	}
 
 	if g.targetIs(handlerTgt) {
@@ -87,13 +87,23 @@ func main() {
 
 }
 
-func (g *gen) setCmdAndTarget(args []string) error {
+func (g *gen) setup(args []string) error {
 	err := g.setCmd(args)
 	if err != nil {
 		return err
 	}
 
-	return g.setTarget(args)
+	err = g.setTarget(args)
+	if err != nil {
+		return err
+	}
+
+	err = g.setUsing(args)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (g *gen) setCmd(args []string) error {
@@ -101,6 +111,7 @@ func (g *gen) setCmd(args []string) error {
 		return errors.New("not a valid command")
 	}
 
+	g.cmd = args[0]
 	return nil
 }
 
@@ -141,6 +152,15 @@ func (g *gen) isValidTarget(args []string) (valid bool) {
 	return false
 }
 
+func (g *gen) setUsing(args []string) error {
+	if len(args) < 3 || args[2] == "" {
+		return errors.New("no input file provided")
+	}
+
+	g.using = args[2]
+	return nil
+}
+
 func (g *gen) cmdIs(cmd string) bool {
 	return g.cmd == cmd
 }
@@ -173,7 +193,7 @@ func (g *gen) readFile() error {
 
 	data, err := ioutil.ReadFile(g.using)
 	if err != nil {
-		return fmt.Errorf("Cannot read input file: %s", g.using)
+		return fmt.Errorf("cannot read input file: %s", g.using)
 	}
 
 	g.data = data
@@ -197,4 +217,8 @@ func (g *gen) parseData() error {
 
 func projectRootDir() (dir string, err error) {
 	return os.Getwd()
+}
+
+func errMsg(err error) string {
+	return strings.Title(strings.ToLower(err.Error()))
 }
