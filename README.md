@@ -27,6 +27,8 @@ $ mw help [cmd]
 ...
 
 $ mw cmd target -using=resource.yaml
+$ # i.e:
+$ mw generate all assets/gen/resource.yaml
 ...
 ```
 
