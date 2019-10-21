@@ -40,7 +40,7 @@ var (
 	allTgt       = "all"
 
 	commands = []string{generateCmd, helpCmd}
-	tartgets = []string{handlerTgt, migrationTgt, modelTgt, repoTgt, restcltTgt, testTgt, allTgt}
+	targets = []string{handlerTgt, migrationTgt, modelTgt, repoTgt, restcltTgt, testTgt, allTgt}
 )
 
 func main() {
@@ -143,7 +143,7 @@ func (g *gen) isValidTarget(args []string) (valid bool) {
 		return false
 	}
 
-	for _, v := range tartgets {
+	for _, v := range targets {
 		if v == args[1] {
 			return true
 		}
