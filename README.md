@@ -3,7 +3,7 @@ Resource files generator.
 
 ## Notes
 Work in progress.
-Not usable yet.
+Not ready to be used.
 
 ## Install
 
@@ -23,8 +23,24 @@ $ make install
 ## Usage
 ```shell
 $ mw help
+$ mw help [cmd]
 ...
 
-$ mw generate resource_name.hcl -all
+$ mw cmd target -using=resource.yaml
 ...
 ```
+
+**Where**
+
+  * **cmd** is the name of the command.
+    * **help:** Shows main help
+    * **generate:** Shows help for generate command
+
+  * **target** is one of this list:
+    * **handler:** generates a handler
+    * **migration:** generates a migration
+    * **model:** generates a model
+    * **repo:** generates a repo handler
+    * **test:** generates a test for handler
+    * **all:** generates all resource files
+
