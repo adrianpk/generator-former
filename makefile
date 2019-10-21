@@ -39,5 +39,4 @@ custom-build:
 
 get-deps:
 	go get -u "github.com/davecgh/go-spew"
-	go get -u "github.com/hashicorp/hcl"
 	go get -u "gopkg.in/yaml.v2"
