@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
+	//"github.com/davecgh/go-spew/spew"
 	"gopkg.in/yaml.v2"
 )
 
@@ -21,8 +21,8 @@ type (
 
 		force bool
 
-		data     []byte
-		metadata *metadata
+		data []byte
+		meta *metadata
 	}
 )
 
@@ -40,7 +40,7 @@ var (
 	allTgt       = "all"
 
 	commands = []string{generateCmd, helpCmd}
-	targets = []string{handlerTgt, migrationTgt, modelTgt, repoTgt, restcltTgt, testTgt, allTgt}
+	targets  = []string{handlerTgt, migrationTgt, modelTgt, repoTgt, restcltTgt, testTgt, allTgt}
 )
 
 func main() {
@@ -48,7 +48,7 @@ func main() {
 
 	args := os.Args[1:]
 
-	flag.BoolVar(&g.force, "force", false, "Overwrite output files.")
+	flag.BoolVar(&g.force, "force", true, "Overwrite output files.")
 	flag.Parse()
 
 	err := g.setup(args)
@@ -62,7 +62,8 @@ func main() {
 	}
 
 	if g.targetIs(handlerTgt) {
-		panic("Not implemented yet")
+		g.genMigration()
+		return
 	}
 
 	if g.targetIs(migrationTgt) {
@@ -203,15 +204,16 @@ func (g *gen) readFile() error {
 
 func (g *gen) parseData() error {
 	log.Println("Generating metadata")
+
 	md := metadata{}
 	err := yaml.Unmarshal(g.data, &md)
 	if err != nil {
 		return err
 	}
 
-	log.Println(spew.Sdump(md))
+	//log.Println(spew.Sdump(md))
 
-	g.metadata = &md
+	g.meta = &md
 	return nil
 }
 
