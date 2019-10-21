@@ -14,17 +14,10 @@ import (
 
 type (
 	gen struct {
-		command string
+		cmd    string
+		target string
 
-		handler   bool
-		migration bool
-		model     bool
-		repo      bool
-		restcl    bool
-		test      bool
-		all       bool
-
-		input string
+		using string
 		force bool
 
 		data     []byte
@@ -33,42 +26,34 @@ type (
 )
 
 var (
+	// Commands
 	generateCmd = "generate"
 	helpCmd     = "help"
+	// Target
+	handlerTgt   = "handler"
+	migrationTgt = "migration"
+	modelTgt     = "model"
+	repoTgt      = "repo"
+	restcltTgt   = "restctl"
+	testTgt      = "test"
+	allTgt       = "all"
 
 	commands = []string{generateCmd, helpCmd}
+	tartgets = []string{handlerTgt, migrationTgt, modelTgt, repoTgt, restcltTgt, testTgt, allTgt}
 )
 
 func main() {
-	args := os.Args[1:]
-	if len(args) < 1 {
-		panic("Run 'mw help' to see a list of valid commands.")
-	}
-
 	var g gen
 
-	flag.BoolVar(&g.handler, "handler", false, "Generate handler and associated files.")
-	flag.BoolVar(&g.migration, "migration", false, "Generate migration file.")
-	flag.BoolVar(&g.model, "model", false, "Generate model file.")
-	flag.BoolVar(&g.repo, "repo", false, "Generate repo file.")
-	flag.BoolVar(&g.restcl, "restcl", false, "Generate REST cURL invocation shell scripts.")
-	flag.BoolVar(&g.test, "test", false, "Generate handler integration test suite.")
-	flag.BoolVar(&g.all, "all", true, "Generate all resource files.")
+	args := os.Args[1:]
+
+	flag.StringVar(&g.using, "using", "", "Input file.")
 	flag.BoolVar(&g.force, "force", false, "Overwrite output files.")
 	flag.Parse()
 
-	noCmd := true
-
-	err := g.setCmd(args[0])
+	err := g.setCmdAndTarget(args)
 	if err != nil {
 		log.Println(err.Error())
-		log.Fatal("Run 'mw help' to see a list of available commands")
-	}
-
-	err = g.setCmdArgs(g.command, args)
-	if err != nil {
-		log.Println(err.Error())
-		log.Fatal("Incomplete argument list")
 	}
 
 	err = g.genMeta()
@@ -76,61 +61,92 @@ func main() {
 		log.Println(err.Error())
 	}
 
-	if g.handler || g.all {
-		noCmd = noCmd && false
+	if g.targetIs(handlerTgt) {
 		panic("Not implemented yet")
 	}
 
-	if g.migration || g.all {
-		noCmd = noCmd && false
+	if g.targetIs(migrationTgt) {
 		panic("Not implemented yet.")
 	}
 
-	if g.model || g.all {
-		noCmd = noCmd && false
+	if g.targetIs(modelTgt) {
 		panic("Not implemented yet.")
 	}
 
-	if g.repo || g.all {
-		noCmd = noCmd && false
+	if g.targetIs(repoTgt) {
 		panic("Not implemented yet.")
 	}
 
-	if g.restcl || g.all {
-		noCmd = noCmd && false
+	if g.targetIs(restcltTgt) {
 		panic("Not implemented yet.")
 	}
 
-	if g.test || g.all {
-		noCmd = noCmd && false
-		panic("Not implemented yet.")
-	}
-
-	if noCmd {
-		// Show help
+	if g.targetIs(testTgt) {
 		panic("Not implemented yet.")
 	}
 
 }
 
-func (g *gen) setCmd(cmd string) error {
+func (g *gen) setCmdAndTarget(args []string) error {
+	err := g.setCmd(args)
+	if err != nil {
+		return err
+	}
+
+	return g.setTarget(args)
+}
+
+func (g *gen) setCmd(args []string) error {
+	if !g.isValidCmd(args) {
+		return errors.New("not a valid command")
+	}
+
+	return nil
+}
+
+func (g *gen) isValidCmd(args []string) (valid bool) {
+	if len(args) < 1 {
+		return false
+	}
+
 	for _, v := range commands {
-		if v == cmd {
-			g.command = cmd
-			return nil
+		if v == args[0] {
+			return true
 		}
 	}
 
-	return errors.New("no command specified")
+	return false
 }
 
-func (g *gen) setCmdArgs(cmd string, args []string) error {
-	if cmd == generateCmd && (len(args) < 2 || args[1] == "") {
-		return errors.New("no input file specified")
+func (g *gen) setTarget(args []string) error {
+	if (g.cmdIs(generateCmd) || g.cmdIs(helpCmd)) && !g.isValidTarget(args) {
+		return errors.New("no valid target specified")
 	}
 
-	g.input = args[1]
+	g.target = args[1]
 	return nil
+}
+
+func (g *gen) isValidTarget(args []string) (valid bool) {
+	if len(args) < 2 {
+		return false
+	}
+
+	for _, v := range tartgets {
+		if v == args[1] {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (g *gen) cmdIs(cmd string) bool {
+	return g.cmd == cmd
+}
+
+func (g *gen) targetIs(target string) bool {
+	return g.target == target || g.target == allTgt
 }
 
 func (g *gen) genMeta() error {
@@ -153,11 +169,11 @@ func (g *gen) genMeta() error {
 }
 
 func (g *gen) readFile() error {
-	log.Printf("Reading input file: '%s'\n", g.input)
+	log.Printf("Reading input file: '%s'\n", g.using)
 
-	data, err := ioutil.ReadFile(g.input)
+	data, err := ioutil.ReadFile(g.using)
 	if err != nil {
-		return fmt.Errorf("Cannot read input file: %s", g.input)
+		return fmt.Errorf("Cannot read input file: %s", g.using)
 	}
 
 	g.data = data
