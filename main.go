@@ -15,14 +15,14 @@ import (
 
 type (
 	gen struct {
-		cmd    string
-		target string
-		using  string
+		Cmd    string
+		Target string
+		Using  string
 
-		force bool
+		Force bool
 
 		data []byte
-		meta *metadata
+		Meta *metadata
 	}
 )
 
@@ -48,7 +48,7 @@ func main() {
 
 	args := os.Args[1:]
 
-	flag.BoolVar(&g.force, "force", true, "Overwrite output files.")
+	flag.BoolVar(&g.Force, "force", true, "Overwrite output files.")
 	flag.Parse()
 
 	err := g.setup(args)
@@ -112,7 +112,7 @@ func (g *gen) setCmd(args []string) error {
 		return errors.New("not a valid command")
 	}
 
-	g.cmd = args[0]
+	g.Cmd = args[0]
 	return nil
 }
 
@@ -135,7 +135,7 @@ func (g *gen) setTarget(args []string) error {
 		return errors.New("no valid target specified")
 	}
 
-	g.target = args[1]
+	g.Target = args[1]
 	return nil
 }
 
@@ -158,16 +158,16 @@ func (g *gen) setUsing(args []string) error {
 		return errors.New("no input file provided")
 	}
 
-	g.using = args[2]
+	g.Using = args[2]
 	return nil
 }
 
 func (g *gen) cmdIs(cmd string) bool {
-	return g.cmd == cmd
+	return g.Cmd == cmd
 }
 
 func (g *gen) targetIs(target string) bool {
-	return g.target == target || g.target == allTgt
+	return g.Target == target || g.Target == allTgt
 }
 
 func (g *gen) genMeta() error {
@@ -190,11 +190,11 @@ func (g *gen) genMeta() error {
 }
 
 func (g *gen) readFile() error {
-	log.Printf("Reading input file: '%s'\n", g.using)
+	log.Printf("Reading input file: '%s'\n", g.Using)
 
-	data, err := ioutil.ReadFile(g.using)
+	data, err := ioutil.ReadFile(g.Using)
 	if err != nil {
-		return fmt.Errorf("cannot read input file: %s", g.using)
+		return fmt.Errorf("cannot read input file: %s", g.Using)
 	}
 
 	g.data = data
@@ -213,7 +213,7 @@ func (g *gen) parseData() error {
 
 	//log.Println(spew.Sdump(md))
 
-	g.meta = &md
+	g.Meta = &md
 	return nil
 }
 
