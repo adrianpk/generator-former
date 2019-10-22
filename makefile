@@ -17,10 +17,10 @@ build-linux:
 	CGOENABLED=0 GOOS=linux GOARCH=amd64; go build -o ./bin/$(BINARY_UNIX) ./cmd/$(BINARY_NAME).go
 
 install:
-	go build -o $(GOPATH)/bin/$(BINARY_NAME) main.go metadata.go migration.go
+	go build -o $(GOPATH)/bin/$(BINARY_NAME) main.go metadata.go migration.go model.go
 
 custom-install:
-	go build -o $(INSTALL_PATH)/$(BINARY_NAME) main.go metadata.go migration.go
+	go build -o $(INSTALL_PATH)/$(BINARY_NAME) main.go metadata.go migration.go model.go
 
 test:
 	@echo "Not implemented"
