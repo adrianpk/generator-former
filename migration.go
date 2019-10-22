@@ -113,21 +113,6 @@ package migration
 
 import "log"
 
-
-// Remember to add migrations to migator.
-//func GetMigrator(cfg *config.Config) *migration.Migrator {
-	//m := migration.Init(cfg)
-
-	//// Previous migrations if there are
-
-	//// CreateUsersTable
-	//mg = &mig{}
-	//mg.Config(mg.Create{{- .PluralPascalCase -}}Table, mg.Drop{{- .PluralPascalCase -}}Table
-	//m.AddMigration(mg)
-
-	//return m
-//}
-
 // Create{{- .PluralPascalCase -}}Table migration
 func (m *mig) Create{{- .PluralPascalCase -}}Table() error {
 	tx := m.GetTx()
