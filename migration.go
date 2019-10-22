@@ -8,27 +8,40 @@ import (
 	"text/template"
 )
 
+type (
+	migrationGenerator struct {
+		Meta  *metadata
+		force bool
+	}
+)
+
 func (g *gen) genMigration() {
-	md := g.meta
-	md.genMigStatements()
-	err := g.write()
+	md := g.Meta
+	mg := migrationGenerator{
+		Meta:  md,
+		force: g.Force,
+	}
+
+	mg.genStatements()
+	err := mg.write()
 	if err != nil {
 		log.Printf("Not done: %s\n", err.Error())
 		return
 	}
-	log.Println("Done")
+	log.Println("Done!")
 }
 
-func (md *metadata) genMigStatements() {
-	md.genCreateStatement()
-	md.genDropStatement()
-	md.genFKAlterStatement()
+func (mg *migrationGenerator) genStatements() {
+	mg.genCreateStatement()
+	mg.genDropStatement()
+	mg.genFKAlterStatement()
 }
 
-func (md *metadata) genCreateStatement() {
+func (mg *migrationGenerator) genCreateStatement() {
+	md := mg.Meta
 	props := md.PropDefs
 	var createSQL bytes.Buffer
-	createSQL.WriteString(fmt.Sprintf("CREATE TABLE %s\n(", md.PluralSnakeCase))
+	createSQL.WriteString(fmt.Sprintf("CREATE TABLE %s\n\t(\n", md.PluralSnakeCase))
 	last := len(props) - 1
 	for i := range props {
 		prop := props[i]
@@ -48,17 +61,19 @@ func (md *metadata) genCreateStatement() {
 		}
 		createSQL.WriteString(fmt.Sprintf("\t %s %s", prop.SQLColumn, ending))
 	}
-	createSQL.WriteString(");")
+	createSQL.WriteString("\t);")
 	md.CreateStatement = createSQL.String()
 }
 
-func (md *metadata) genDropStatement() {
+func (mg *migrationGenerator) genDropStatement() {
+	md := mg.Meta
 	var dropSQL bytes.Buffer
 	dropSQL.WriteString(fmt.Sprintf("DROP TABLE %s CASCADE;", md.PluralSnakeCase))
 	md.DropStatement = dropSQL.String()
 }
 
-func (md *metadata) genFKAlterStatement() {
+func (mg *migrationGenerator) genFKAlterStatement() {
+	md := mg.Meta
 	props := md.NonVirtualPropDefs
 	for i := range props {
 		prop := props[i]
@@ -69,21 +84,21 @@ func (md *metadata) genFKAlterStatement() {
 			a.WriteString(fmt.Sprintf("\tADD CONSTRAINT %s\n", prop.Ref.FKName))
 			a.WriteString(fmt.Sprintf("\tFOREIGN KEY (%s)\n", prop.SQLColumn))
 			a.WriteString(fmt.Sprintf("\tREFERENCES %s\n", prop.Ref.TrgTable))
-			a.WriteString("\tON DELETE CASCADE;\n")
+			a.WriteString("\tON DELETE CASCADE;")
 			alterSQL.WriteString(a.String())
 			md.AlterStatement = append(md.AlterStatement, alterSQL.String())
 		}
 	}
 }
 
-func (g *gen) write() error {
-	md := g.meta
+func (mg *migrationGenerator) write() error {
+	md := mg.Meta
 	//n := fmt.Sprintf("%screatetable%s.go", "00000", md.PluralLowercase)
 	n := fmt.Sprintf("%screatetable%s.go", newMigrationPrefix(), md.PluralLowercase)
 	f := filepath.Join(md.PackageDir, "internal", "migration", n)
 	log.Printf("Migration file: %s\n", f)
 
-	w, err := getFileWriter(f, g.force)
+	w, err := getFileWriter(f, mg.force)
 	if err != nil {
 		return err
 	}

@@ -101,7 +101,7 @@ var (
 )
 
 func (g *gen) procMetadata() error {
-	md := g.meta
+	md := g.Meta
 	md.ResName = upercaseFirst(md.ResName)
 	md.genNameForms()
 	md.addIdentification()
