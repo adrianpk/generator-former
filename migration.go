@@ -22,7 +22,8 @@ func (g *gen) genMigration() {
 		force: g.Force,
 	}
 
-	mg.genStatements()
+	mg.updateMetadata()
+
 	err := mg.write()
 	if err != nil {
 		log.Printf("Not done: %s\n", err.Error())
@@ -31,7 +32,7 @@ func (g *gen) genMigration() {
 	log.Println("Done!")
 }
 
-func (mg *migrationGenerator) genStatements() {
+func (mg *migrationGenerator) updateMetadata() {
 	mg.genCreateStatement()
 	mg.genDropStatement()
 	mg.genFKAlterStatement()
@@ -117,7 +118,7 @@ import "log"
 func (m *mig) Create{{- .PluralPascalCase -}}Table() error {
 	tx := m.GetTx()
 
-	st := ` + "`" + `{{- .CreateStatement -}}` + "`" + `
+	st := ` + "`" + `{{-.CreateStatement-}}` + "`" + `
 
 	{{- "\n" -}}
 
@@ -146,7 +147,7 @@ func (m *mig) Create{{- .PluralPascalCase -}}Table() error {
 func (m *mig) Drop{{- .PluralPascalCase -}}Table() error {
 	tx := m.GetTx()
 
-	st := ` + "`" + `{{- .DropStatement -}}` + "`" + `
+	st := ` + "`" + `{{-.DropStatement-}}` + "`" + `
 
 	{{- "\n" -}}
 	{{- "\n" -}}
