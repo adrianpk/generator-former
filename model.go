@@ -9,7 +9,7 @@ import (
 )
 
 type (
-	migrationGenerator struct {
+	modelGenerator struct {
 		Meta  *metadata
 		force bool
 	}
@@ -17,7 +17,7 @@ type (
 
 func (g *gen) genMigration() {
 	md := g.Meta
-	mg := migrationGenerator{
+	mg := modelGenerator{
 		Meta:  md,
 		force: g.Force,
 	}
@@ -31,13 +31,13 @@ func (g *gen) genMigration() {
 	log.Println("Done!")
 }
 
-func (mg *migrationGenerator) genStatements() {
+func (mg *modelGenerator) genStatements() {
 	mg.genCreateStatement()
 	mg.genDropStatement()
 	mg.genFKAlterStatement()
 }
 
-func (mg *migrationGenerator) genCreateStatement() {
+func (mg *modelGenerator) genCreateStatement() {
 	md := mg.Meta
 	props := md.PropDefs
 	var createSQL bytes.Buffer
@@ -65,14 +65,14 @@ func (mg *migrationGenerator) genCreateStatement() {
 	md.CreateStatement = createSQL.String()
 }
 
-func (mg *migrationGenerator) genDropStatement() {
+func (mg *modelGenerator) genDropStatement() {
 	md := mg.Meta
 	var dropSQL bytes.Buffer
 	dropSQL.WriteString(fmt.Sprintf("DROP TABLE %s CASCADE;", md.PluralSnakeCase))
 	md.DropStatement = dropSQL.String()
 }
 
-func (mg *migrationGenerator) genFKAlterStatement() {
+func (mg *modelGenerator) genFKAlterStatement() {
 	md := mg.Meta
 	props := md.NonVirtualPropDefs
 	for i := range props {
@@ -91,7 +91,7 @@ func (mg *migrationGenerator) genFKAlterStatement() {
 	}
 }
 
-func (mg *migrationGenerator) write() error {
+func (mg *modelGenerator) write() error {
 	md := mg.Meta
 	//n := fmt.Sprintf("%screatetable%s.go", "00000", md.PluralLowercase)
 	n := fmt.Sprintf("%screatetable%s.go", newMigrationPrefix(), md.PluralLowercase)
@@ -112,21 +112,6 @@ var migrationTempl = `
 package migration
 
 import "log"
-
-
-// Remember to add migrations to migator.
-//func GetMigrator(cfg *config.Config) *migration.Migrator {
-	//m := migration.Init(cfg)
-
-	//// Previous migrations if there are
-
-	//// CreateUsersTable
-	//mg = &mig{}
-	//mg.Config(mg.Create{{- .PluralPascalCase -}}Table, mg.Drop{{- .PluralPascalCase -}}Table
-	//m.AddMigration(mg)
-
-	//return m
-//}
 
 // Create{{- .PluralPascalCase -}}Table migration
 func (m *mig) Create{{- .PluralPascalCase -}}Table() error {
