@@ -1,0 +1,49 @@
+package migration
+//This comes from go-bindata
+import "log"
+
+// Create{{- .PluralPascalCase -}}Table migration
+func (m *mig) Create{{- .PluralPascalCase -}}Table() error {
+	tx := m.GetTx()
+
+	st := `{{- .CreateStatement -}}`
+
+	{{- "\n" -}}
+
+	_, err = tx.Exec(st)
+	if err != nil {
+		return err
+	}
+
+	{{- "\n" -}}
+
+	{{ range $key2, $sqlString := .AlterStatement }}
+  st = `{{- $sqlString -}}`
+
+	{{- "\n" -}}
+
+	_, err = tx.Exec(st)
+	if err != nil {
+		return err
+	}
+	{{ end }}
+
+	return nil
+}
+
+// Drop{{- .PluralPascalCase -}}Table rollback
+func (m *mig) Drop{{- .PluralPascalCase -}}Table() error {
+	tx := m.GetTx()
+
+	st := `{{- .DropStatement -}}`
+
+	{{- "\n" -}}
+	{{- "\n" -}}
+
+	_, err := tx.Exec(st)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -1,0 +1,45 @@
+package model
+
+import (
+	"github.com/twinj/uuid"
+	m "gitlab.com/mikrowezel/backend/model"
+)
+
+type (
+	// {{.SingularPascalCase}} model
+	{{.SingularPascalCase}} struct {
+		m.Identification
+		{{- range $key, $prop := .PropDefs}}
+		{{- if not $prop.IsEmbedded}}
+		{{$prop.Name}} {{$prop.SafeType}} `db:"{{$prop.SQLColumn}}" json:"{{$prop.SingularCamelCase}},omitempty"`
+		{{- end}}
+		{{- end}}
+    m.Audit
+	}
+)
+
+// SetCreateValues for model.
+func ({{.SingularCamelCase}} *{{.SingularPascalCase}}) SetCreateValues() error {
+  // Replace '{{.SingularCamelCase}}.Name.String' for another unique identifier
+  // If Name does not exist or you prefer another one.
+  // It will be used for Slug generation.
+  // A plain string will also work but it will make look similar all slugs for each instance
+  // of this resource.
+	// i.e.: {{.SingularCamelCase}}Pfx := "slugpfx"
+	{{.SingularCamelCase}}Pfx := {{.SingularCamelCase}}.Name.String
+	{{.SingularCamelCase}}.Identification.SetCreateValues({{.SingularCamelCase}}Pfx)
+	{{.SingularCamelCase}}.Audit.SetCreateValues()
+	return nil
+}
+
+// SetUpdateValues for model.
+func ({{.SingularCamelCase}} *{{.SingularPascalCase}}) SetUpdateValues() error {
+	{{.SingularCamelCase}}.Audit.SetUpdateValues()
+	return nil
+}
+
+// Match condition for model.
+func ({{.SingularCamelCase}} *{{.SingularPascalCase}}) Match(tc *{{.SingularPascalCase}}) bool {
+	r := {{.ModelMatchCond}}
+	return r
+}
