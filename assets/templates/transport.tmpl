@@ -1,0 +1,87 @@
+package {{ .ServicePkgPath }}
+
+import (
+	uuid "github.com/satori/go.uuid"
+)
+
+type (
+	// {{ .SingularPascalCase }} request and response data.
+	{{ .SingularPascalCase }} struct {
+		{{- range $key, $prop := .PropDefs}}
+		{{- if not $prop.IsEmbedded}}
+		{{$prop.Name}} {{$prop.Type}} `json:"{{$prop.SingularCamelCase}},omitempty"`
+		{{- end}}
+		{{- end}}
+	}
+
+	{{ .PluralPascalCase }} []{{ .SingularPascalCase}}
+)
+
+type (
+	// Create{{ .SingularPascalCase }}Req input data.
+	Create{{ .SingularPascalCase }}Req struct {
+		{{ .SingularPascalCase }}
+	}
+
+	// Create{{ .SingularPascalCase }}Res output data.
+	Create{{ .SingularPascalCase }}Res struct {
+		{{ .SingularPascalCase }}
+		Msg   string `json:"msg,omitempty"`
+		Error string `json:"err,omitempty"`
+	}
+)
+
+type (
+	// Get{{ .PluralPascalCase }}Req input data.
+	Get{{ .PluralPascalCase }}Req struct {
+	}
+
+	// Get{{ .PluralPascalCase }}Res output data.
+	Get{{ .PluralPascalCase }}Res struct {
+		{{ .PluralPascalCase }}
+		Msg   string `json:"msg,omitempty"`
+		Error string `json:"err,omitempty"`
+	}
+)
+
+type (
+	// Get{{ .SingularPascalCase }}Req input data.
+	Get{{ .SingularPascalCase }}Req struct {
+		Identifier
+	}
+
+	// Get{{ .SingularPascalCase }}Res output data.
+	Get{{ .SingularPascalCase }}Res struct {
+		{{ .SingularPascalCase }}
+		Msg   string `json:"msg,omitempty"`
+		Error string `json:"err,omitempty"`
+	}
+)
+
+type (
+	// Update{{ .SingularPascalCase }}Req input data.
+	Update{{ .SingularPascalCase }}Req struct {
+		Identifier
+		{{ .SingularPascalCase }}
+	}
+
+	// Update{{ .SingularPascalCase }}Res output data.
+	Update{{ .SingularPascalCase }}Res struct {
+		{{ .SingularPascalCase }}
+		Msg   string `json:"msg,omitempty"`
+		Error string `json:"err,omitempty"`
+	}
+)
+
+type (
+	// Delete{{ .SingularPascalCase }}Req input data.
+	Delete{{ .SingularPascalCase }}Req struct {
+		Identifier
+	}
+
+	// Delete{{ .SingularPascalCase }}Res output data.
+	Delete{{ .SingularPascalCase }}Res struct {
+		Msg   string `json:"msg,omitempty"`
+		Error string `json:"err,omitempty"`
+	}
+)

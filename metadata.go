@@ -213,11 +213,11 @@ func (md *metadata) addDetail() {
 }
 
 func (md *metadata) addAudit() {
-	pd := makePropDef("CreatedBy", "uuid", 36, false, false, false, false, true, true, "")
+	pd := makePropDef("CreatedBy", "uuid.UUID", 36, false, false, false, false, true, true, "")
 	pd.SQLColumn = "created_by_id"
 	// propDef.Ref = PropertyRef{Property: "id"}
 	md.PropDefs = append(md.PropDefs, pd)
-	pd = makePropDef("UpdatedBy", "uuid", 36, false, false, false, false, true, true, "")
+	pd = makePropDef("UpdatedBy", "uuid.UUID", 36, false, false, false, false, true, true, "")
 	pd.SQLColumn = "updated_by_id"
 	// propDef.Ref = PropertyRef{Property: "id"}
 	md.PropDefs = append(md.PropDefs, pd)
@@ -335,6 +335,7 @@ func (property *propDef) setTypes() {
 		property.SafeType = "nulls.Int64"
 		property.SafeTypeMaker = "NullsZeroInt64()"
 	case "uuid":
+		property.Type = "uuid.UUID"
 		property.ModelType = "UUID"
 		property.SafeType = "uuid.UUID"
 		property.SafeTypeMaker = "NullsZeroUUID()"
@@ -375,8 +376,9 @@ func (property *propDef) setTypes() {
 		property.SafeType = "sqlxtypes.JSONText"
 		property.SafeTypeMaker = "NullsEmptyByteSlice()"
 	case "primary_key":
+		property.Type = "uuid.UUID"
 		property.ModelType = "UUID"
-		property.SafeType = "nulls.UUID"
+		property.SafeType = "uuid.UUID"
 		property.SafeTypeMaker = "NullsZeroUUID()"
 	case "string":
 		property.ModelType = "String"
@@ -478,7 +480,7 @@ func sqlType(prop *propDef) string {
 		return "TIMESTAMP"
 	case "timestamptz":
 		return "TIMESTAMP WITH TIME ZONE"
-	case "uuid":
+	case "uuid.UUID":
 		return "UUID"
 	default:
 		return "VARCHAR(64)"
@@ -709,7 +711,7 @@ func (prop propDef) isKeyType() bool {
 }
 
 func (prop propDef) isUUIDType() bool {
-	return prop.Type == "uuid"
+	return prop.Type == "uuid.UUID"
 }
 
 func (prop propDef) isPasswordType() bool {

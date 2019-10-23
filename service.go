@@ -36,16 +36,17 @@ func (mg *serviceGenerator) updateMetadata() {
 }
 
 func (mg *serviceGenerator) write() error {
-	return mg.writeServer()
-	//mg.writeTransport()
+	mg.writeServer()
+	err := mg.writeTransport()
 	//mg.writeService()
 	//mg.writeHelper()
 	//mg.writeTest()
+	return err
 }
 
 func (mg *serviceGenerator) writeServer() error {
 	md := mg.Meta
-	n := fmt.Sprintf("%s.go", md.SingularLowercase)
+	n := fmt.Sprintf("%sserver.go", md.SingularLowercase)
 	f := filepath.Join(md.PackageDir, "pkg", md.ServicePkgPath, n)
 	log.Printf("Service file: %s\n", f)
 
@@ -65,6 +66,35 @@ func (mg *serviceGenerator) writeServer() error {
 
 func (sg *serviceGenerator) serverTemplate() (*template.Template, error) {
 	res, err := Asset("assets/templates/server.tmpl")
+	if err != nil {
+		return nil, err
+	}
+	t := template.New("template")
+	return t.Parse(string(res))
+}
+
+func (mg *serviceGenerator) writeTransport() error {
+	md := mg.Meta
+	n := fmt.Sprintf("%stransport.go", md.SingularLowercase)
+	f := filepath.Join(md.PackageDir, "pkg", md.ServicePkgPath, n)
+	log.Printf("Service file: %s\n", f)
+
+	w, err := getFileWriter(f, mg.force)
+	if err != nil {
+		return err
+	}
+	defer w.Close()
+
+	t, err := mg.transportTemplate()
+	if err != nil {
+		return err
+	}
+
+	return t.Execute(w, md)
+}
+
+func (sg *serviceGenerator) transportTemplate() (*template.Template, error) {
+	res, err := Asset("assets/templates/transport.tmpl")
 	if err != nil {
 		return nil, err
 	}
