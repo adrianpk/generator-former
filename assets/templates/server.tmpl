@@ -1,3 +1,12 @@
+package {{ .ServicePkgPath }}
+
+import (
+	"context"
+	"net/http"
+
+	"github.com/go-chi/chi"
+)
+
 // Append this to server file.
 // Use as a reference, it  may require some edit.
 
@@ -14,7 +23,7 @@ func (c *Container) makeAccountAPIRouter(parent chi.Router) chi.Router {
 	return parent.Route("/{{ .PluralLowercase }}", func(ch chi.Router) {
 		ch.Post("/", c.Create{{ .SingularPascalCase }}JSON)
 		ch.Get("/", c.Get{{ .SingularPascalCase }}JSON)
-		ch.Route({{"{"}}{{ .SingularLowercase }}{{"}"}}, func(sch chi.Router) {
+		ch.Route("/{{"{"}}{{ .SingularLowercase }}{{"}"}}", func(sch chi.Router) {
 			sch.Use({{ .SingularLowercase }}Ctx)
 			sch.Get("/", c.Get{{ .SingularPascalCase }}JSON)
 			sch.Put("/", c.Update{{ .SingularPascalCase }}JSON)
