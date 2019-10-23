@@ -23,6 +23,7 @@ type (
 		ResName             string `yaml:"name"`
 		APIVersion          string `yaml:"apiVer"`
 		APIVersionUpper     string
+		ServicePkgPath      string `yaml:"servicePkgPath"`
 		Plural              string `yaml:"plural"`
 		SingularLowercase   string
 		PluralLowercase     string
