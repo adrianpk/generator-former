@@ -198,9 +198,11 @@ func (md *metadata) GenerateMetadata() {
 }
 
 func (md *metadata) addIdentification() {
-	pd := makePropDef("ID", "primary_key", 0, false, true, true, false, true, true, "")
+	pd := makePropDef("ID", "primary_key", 36, false, true, true, false, true, true, "")
 	md.PropDefs = append([]propDef{pd}, md.PropDefs...)
-	pd = makePropDef("Name", "string", 0, false, false, false, true, true, false, "")
+	pd = makePropDef("TenantID", "string", 128, false, true, true, false, true, true, "")
+	md.PropDefs = append([]propDef{pd}, md.PropDefs...)
+	pd = makePropDef("Slug", "string", 36, false, false, true, false, true, false, "")
 	md.PropDefs = append(md.PropDefs, pd)
 }
 
@@ -333,7 +335,7 @@ func (property *propDef) setTypes() {
 		property.SafeTypeMaker = "NullsZeroInt64()"
 	case "uuid":
 		property.ModelType = "UUID"
-		property.SafeType = "nulls.UUID"
+		property.SafeType = "uuid.UUID"
 		property.SafeTypeMaker = "NullsZeroUUID()"
 	case "binary":
 		property.ModelType = "ByteSlice"
@@ -671,7 +673,7 @@ func ensureDir(dirPath string) {
 }
 
 // propDef --------------------------------------------------------------------
-// makePropDef - Creates an instence of propDef
+// makePropDe creates an instance of propDef
 func makePropDef(name, propType string, length int, isVirtual, isKey, isUnique, admitNull, isEmbedded, isBackendOnly bool, value interface{}) propDef {
 	return propDef{
 		Name:          name,

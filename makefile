@@ -11,16 +11,20 @@ INSTALL_PATH=$(HOME)/Dev/go/general/bin
 all: test build
 
 build:
-	go build -o ./bin/$(BINARY_NAME) main.go metadata.go migration.go
+	go generate
+	go build -o ./bin/$(BINARY_NAME) main.go metadata.go migration.go resources.go
 
 build-linux:
+	go generate
 	CGOENABLED=0 GOOS=linux GOARCH=amd64; go build -o ./bin/$(BINARY_UNIX) ./cmd/$(BINARY_NAME).go
 
 install:
-	go build -o $(GOPATH)/bin/$(BINARY_NAME) main.go metadata.go migration.go model.go
+	go generate
+	go build -o $(GOPATH)/bin/$(BINARY_NAME) main.go metadata.go migration.go model.go resources.go
 
 custom-install:
-	go build -o $(INSTALL_PATH)/$(BINARY_NAME) main.go metadata.go migration.go model.go
+	go generate
+	go build -o $(INSTALL_PATH)/$(BINARY_NAME) main.go metadata.go migration.go model.go resources.go
 
 test:
 	@echo "Not implemented"
