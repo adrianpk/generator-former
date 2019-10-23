@@ -20,11 +20,11 @@ build-linux:
 
 install:
 	go generate
-	go build -o $(GOPATH)/bin/$(BINARY_NAME) main.go metadata.go migration.go model.go resources.go
+	go build -o $(GOPATH)/bin/$(BINARY_NAME) main.go metadata.go migration.go model.go service.go resources.go
 
 custom-install:
 	go generate
-	go build -o $(INSTALL_PATH)/$(BINARY_NAME) main.go metadata.go migration.go model.go resources.go
+	go build -o $(INSTALL_PATH)/$(BINARY_NAME) main.go metadata.go migration.go model.go service.go resources.go
 
 test:
 	@echo "Not implemented"

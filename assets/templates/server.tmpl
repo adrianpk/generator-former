@@ -1,0 +1,32 @@
+// Append this to server file.
+// Use as a reference, it  may require some edit.
+
+// Uncomment this if contextKey is not already defined.
+// type contextKey string
+
+const (
+	{{ .SingularLowercase }}CtxKey contextKey = "{{ .SingularLowercase }}"
+)
+
+// Replace (c *Container) by your custom struct
+// or convert the method into a fuction if you don't need to attach it.
+func (c *Container) makeAccountAPIRouter(parent chi.Router) chi.Router {
+	return parent.Route("/{{ .PluralLowercase }}", func(ch chi.Router) {
+		ch.Post("/", c.Create{{ .SingularPascalCase }}JSON)
+		ch.Get("/", c.Get{{ .SingularPascalCase }}JSON)
+		ch.Route({{"{"}}{{ .SingularLowercase }}{{"}"}}, func(sch chi.Router) {
+			sch.Use({{ .SingularLowercase }}Ctx)
+			sch.Get("/", c.Get{{ .SingularPascalCase }}JSON)
+			sch.Put("/", c.Update{{ .SingularPascalCase }}JSON)
+			sch.Delete("/", c.Delete{{ .SingularPascalCase }}JSON)
+		})
+	})
+}
+
+func {{ .SingularLowercase }}Ctx(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		slug := chi.URLParam(r, "{{ .SingularLowercase }}-slug")
+		ctx := context.WithValue(r.Context(), {{ .SingularLowercase }}CtxKey, slug)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}

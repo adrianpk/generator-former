@@ -34,16 +34,16 @@ var (
 	generateCmd = "generate"
 	helpCmd     = "help"
 	// Target
-	handlerTgt   = "handler"
 	migrationTgt = "migration"
 	modelTgt     = "model"
 	repoTgt      = "repo"
+	serviceTgt   = "service"
 	restcltTgt   = "restctl"
 	testTgt      = "test"
 	allTgt       = "all"
 
 	commands = []string{generateCmd, helpCmd}
-	targets  = []string{handlerTgt, migrationTgt, modelTgt, repoTgt, restcltTgt, testTgt, allTgt}
+	targets  = []string{migrationTgt, modelTgt, repoTgt, serviceTgt, restcltTgt, testTgt, allTgt}
 )
 
 func main() {
@@ -64,22 +64,21 @@ func main() {
 		log.Println(errMsg(err))
 	}
 
-	if g.targetIs(handlerTgt) {
-		//g.genHandler()
-		//return
-	}
-
 	if g.targetIs(migrationTgt) {
 		//g.genMigration()
 	}
 
 	if g.targetIs(modelTgt) {
-		g.genModel()
-		return
+		//g.genModel()
 	}
 
 	if g.targetIs(repoTgt) {
-		panic("Not implemented yet.")
+		//panic("Not implemented yet.")
+	}
+
+	if g.targetIs(serviceTgt) {
+		g.genService()
+		return
 	}
 
 	if g.targetIs(restcltTgt) {
