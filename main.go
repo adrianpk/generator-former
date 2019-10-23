@@ -1,5 +1,8 @@
 package main
 
+//go:generate rm -rf resources.go
+//go:generate go-bindata -pkg main -o resources.go assets/templates/...
+
 import (
 	"errors"
 	"flag"
@@ -62,16 +65,17 @@ func main() {
 	}
 
 	if g.targetIs(handlerTgt) {
-		g.genMigration()
-		return
+		//g.genHandler()
+		//return
 	}
 
 	if g.targetIs(migrationTgt) {
-		panic("Not implemented yet.")
+		//g.genMigration()
 	}
 
 	if g.targetIs(modelTgt) {
-		panic("Not implemented yet.")
+		g.genModel()
+		return
 	}
 
 	if g.targetIs(repoTgt) {

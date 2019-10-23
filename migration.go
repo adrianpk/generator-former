@@ -105,58 +105,19 @@ func (mg *migrationGenerator) write() error {
 	}
 	defer w.Close()
 
-	t := template.Must(template.New("template").Parse(migrationTempl))
+	t, err := mg.template()
+	if err != nil {
+		return err
+	}
+
 	return t.Execute(w, md)
 }
 
-var migrationTempl = `
-package migration
-
-import "log"
-
-// Create{{- .PluralPascalCase -}}Table migration
-func (m *mig) Create{{- .PluralPascalCase -}}Table() error {
-	tx := m.GetTx()
-
-	st := ` + "`" + `{{-.CreateStatement-}}` + "`" + `
-
-	{{- "\n" -}}
-
-	_, err = tx.Exec(st)
+func (mg *migrationGenerator) template() (*template.Template, error) {
+	res, err := Asset("assets/templates/migration.tmpl")
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	{{- "\n" -}}
-
-	{{ range $key2, $sqlString := .AlterStatement }}
-  st = ` + "`" + `{{- $sqlString -}}` + "`" + `
-
-	{{- "\n" -}}
-
-	_, err = tx.Exec(st)
-	if err != nil {
-		return err
-	}
-	{{ end }}
-
-	return nil
+	t := template.New("template")
+	return t.Parse(string(res))
 }
-
-// Drop{{- .PluralPascalCase -}}Table rollback
-func (m *mig) Drop{{- .PluralPascalCase -}}Table() error {
-	tx := m.GetTx()
-
-	st := ` + "`" + `{{-.DropStatement-}}` + "`" + `
-
-	{{- "\n" -}}
-	{{- "\n" -}}
-
-	_, err := tx.Exec(st)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-`

@@ -69,51 +69,19 @@ func (mg *modelGenerator) write() error {
 	}
 	defer w.Close()
 
-	t := template.Must(template.New("template").Parse(modelTempl))
+	t, err := mg.template()
+	if err != nil {
+		return err
+	}
+
 	return t.Execute(w, md)
 }
 
-var modelTempl = `
-package model
-
-import (
-	"database/sql"
-
-	"github.com/lib/pq"
-	"gitlab.com/mikrowezel/backend/db"
-	m "gitlab.com/mikrowezel/backend/model"
-	"golang.org/x/crypto/bcrypt"
-)
-
-type (
-	// {{.SingularPascalCase}} model
-	{{.SingularPascalCase}} struct {
-		m.Identification
-		{{- range $key, $prop := .PropDefs}}
-		{{- if not $prop.IsEmbedded}}
-		{{$prop.Name}} {{$prop.SafeType}} ` + "`" + `db:"{{$prop.SQLColumn}}" json:"{{$prop.SingularCamelCase}},omitempty"` + "`" + `
-		{{- end}}
-		{{- end}}
-    m.Audit
+func (mg *modelGenerator) template() (*template.Template, error) {
+	res, err := Asset("assets/templates/model.tmpl")
+	if err != nil {
+		return nil, err
 	}
-)
-
-// SetCreateValues for model.
-func ({{.SingularCamelCase}} *{{.SingularPascalCase}}) SetCreateValues() error {
-	{{.SingularCamelCase}}Name := {{.SingularCamelCase}}.Name.String
-	{{.SingularCamelCase}}.Identification.SetCreateValues(accountName)
-	{{.SingularCamelCase}}.Audit.SetCreateValues()
-	return nil
+	t := template.New("template")
+	return t.Parse(string(res))
 }
-
-// SetUpdateValues for model.
-func ({{.SingularCamelCase}} *{{.SingularPascalCase}}) SetUpdateValues() error {
-	{{.SingularCamelCase}}.Audit.SetUpdateValues()
-	return nil
-}
-
-// Match condition for model.
-func ({{.SingularCamelCase}} *{{.SingularPascalCase}}) Match(tc *{{.SingularPascalCase}}) bool {
-	r := {{.ModelMatchCond}}
-	return r
-}`
