@@ -213,11 +213,11 @@ func (md *metadata) addDetail() {
 }
 
 func (md *metadata) addAudit() {
-	pd := makePropDef("CreatedBy", "uuid.UUID", 36, false, false, false, false, true, true, "")
+	pd := makePropDef("CreatedBy", "uuid", 36, false, false, false, false, true, true, "")
 	pd.SQLColumn = "created_by_id"
 	// propDef.Ref = PropertyRef{Property: "id"}
 	md.PropDefs = append(md.PropDefs, pd)
-	pd = makePropDef("UpdatedBy", "uuid.UUID", 36, false, false, false, false, true, true, "")
+	pd = makePropDef("UpdatedBy", "uuid", 36, false, false, false, false, true, true, "")
 	pd.SQLColumn = "updated_by_id"
 	// propDef.Ref = PropertyRef{Property: "id"}
 	md.PropDefs = append(md.PropDefs, pd)
@@ -333,85 +333,85 @@ func (property *propDef) setTypes() {
 	case "id":
 		property.ModelType = "Int64"
 		property.SafeType = "nulls.Int64"
-		property.SafeTypeMaker = "NullsZeroInt64()"
+		property.SafeTypeMaker = "db.ToNullInt64"
 	case "uuid":
 		property.Type = "uuid.UUID"
-		property.ModelType = "UUID"
+		property.ModelType = ""
 		property.SafeType = "uuid.UUID"
-		property.SafeTypeMaker = "NullsZeroUUID()"
+		property.SafeTypeMaker = ""
 	case "binary":
 		property.ModelType = "ByteSlice"
 		property.SafeType = "nulls.ByteSlice"
-		property.SafeTypeMaker = "NullsEmptyByteSlice()"
+		property.SafeTypeMaker = "db.ToNullByteSlice"
 	case "boolean":
 		property.ModelType = "Bool"
 		property.SafeType = "nulls.Bool"
-		property.SafeTypeMaker = "NullsFalseBool()"
+		property.SafeTypeMaker = "db.ToNullBool"
 	case "date":
 		property.ModelType = "Time"
 		property.SafeType = "nulls.Time"
-		property.SafeTypeMaker = "NullsZeroTime()"
+		property.SafeTypeMaker = "db.ToNullTime"
 	case "datetime":
 		property.ModelType = "Time"
 		property.SafeType = "nulls.Time"
-		property.SafeTypeMaker = "NullsZeroTime()"
+		property.SafeTypeMaker = "db.ToNullTime"
 	case "decimal":
 		property.ModelType = "Float"
 		property.SafeType = "nulls.Float"
-		property.SafeTypeMaker = "NullsEmptyFloat64()"
+		property.SafeTypeMaker = "db.ToNullFloat64"
 	case "float":
 		property.ModelType = "Float"
 		property.SafeType = "nulls.Float"
-		property.SafeTypeMaker = "NullsEmptyFloat64()"
+		property.SafeTypeMaker = "db.ToNullFloat64"
 	case "geolocation":
 		property.ModelType = "Point"
 		property.SafeType = "nulls.NullPoint"
-		property.SafeTypeMaker = "NullsZeroPoint()"
+		property.SafeTypeMaker = "db.ToNullPoint"
 	case "integer":
 		property.ModelType = "Int64"
 		property.SafeType = "nulls.Int64"
-		property.SafeTypeMaker = "NullsZeroInt64()"
+		property.SafeTypeMaker = "db.ToNullInt64"
 	case "json":
 		property.ModelType = "String"
 		property.SafeType = "sqlxtypes.JSONText"
-		property.SafeTypeMaker = "NullsEmptyByteSlice()"
+		property.SafeTypeMaker = "db.ToNullsByteSlice"
 	case "primary_key":
 		property.Type = "uuid.UUID"
-		property.ModelType = "UUID"
+		property.ModelType = ""
 		property.SafeType = "uuid.UUID"
-		property.SafeTypeMaker = "NullsZeroUUID()"
+		property.SafeTypeMaker = ""
 	case "string":
 		property.ModelType = "String"
 		property.SafeType = "nulls.String"
-		property.SafeTypeMaker = "NullsEmptyString()"
+		property.SafeTypeMaker = "db.ToNullString"
 	case "text":
 		property.ModelType = "String"
 		property.SafeType = "nulls.String"
-		property.SafeTypeMaker = "NullsEmptyString()"
+		property.SafeTypeMaker = "db.ToNullString"
 	case "password":
 		property.ModelType = "String"
 		property.SafeType = "nulls.String"
-		property.SafeTypeMaker = "NullsEmptyString()"
+		property.SafeTypeMaker = "db.ToNullString"
 	case "password_confirmation":
 		property.ModelType = "String"
 		property.SafeType = "nulls.String"
-		property.SafeTypeMaker = "NullsEmptyString()"
+		property.SafeTypeMaker = "db.ToNullString"
 	case "time":
 		property.ModelType = "Time"
 		property.SafeType = "nulls.Time"
-		property.SafeTypeMaker = "NullsZeroTime()"
+		property.SafeTypeMaker = "db.ToNullTime"
 	case "timestamp":
 		property.ModelType = "Time"
 		property.SafeType = "nulls.Time"
-		property.SafeTypeMaker = "NullsZeroTime()"
+		property.SafeTypeMaker = "db.ToNullTime"
 	case "timestamptz":
 		property.ModelType = "Time"
 		property.SafeType = "nulls.Time"
-		property.SafeTypeMaker = "NullsZeroTime()"
+		property.SafeTypeMaker = "db.ToNullTime"
 	default:
 		property.ModelType = "String"
 		property.SafeType = "nulls.String"
-		property.SafeTypeMaker = "NullsEmptyString()"
+		property.SafeTypeMaker = "db.ToNullString"
 	}
 }
 
