@@ -6,15 +6,6 @@ import (
 	"net/http"
 )
 
-const (
-  // Comment if already defined
-	createErr = "Cannot create entity"
-	getAllErr = "Cannot get entity"
-	getErr    = "Cannot get entity"
-	updateErr = "Cannot update entity"
-	deleteErr = "Cannot delete entity"
-)
-
 func (a *Auth) Create{{.SingularPascalCase}}JSON(w http.ResponseWriter, r *http.Request) {
 	var req Create{{.SingularPascalCase}}Req
 	var res Create{{.SingularPascalCase}}Res
