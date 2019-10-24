@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"strings"
 	"text/template"
 )
 
@@ -36,19 +37,19 @@ func (mg *serviceGenerator) updateMetadata() {
 }
 
 func (mg *serviceGenerator) write() error {
-	mg.writeServer()
-	err := mg.writeTransport()
-	//mg.writeService()
-	//mg.writeHelper()
-	//mg.writeTest()
+	mg.writeFile("service")
+	mg.writeFile("transport")
+	err := mg.writeFile("endpoint")
+	//mg.writeFile("helper")
+	//mg.writeiFile("test")
 	return err
 }
 
-func (mg *serviceGenerator) writeServer() error {
+func (mg *serviceGenerator) writeFile(name string) error {
 	md := mg.Meta
-	n := fmt.Sprintf("%sserver.go", md.SingularLowercase)
+	n := fmt.Sprintf("%s%s.go", md.SingularLowercase, name)
 	f := filepath.Join(md.PackageDir, "pkg", md.ServicePkgPath, n)
-	log.Printf("Service file: %s\n", f)
+	log.Printf("%s file: %s\n", strings.Title(strings.ToLower(name)), f)
 
 	w, err := getFileWriter(f, mg.force)
 	if err != nil {
@@ -56,7 +57,7 @@ func (mg *serviceGenerator) writeServer() error {
 	}
 	defer w.Close()
 
-	t, err := mg.serverTemplate()
+	t, err := mg.template(name)
 	if err != nil {
 		return err
 	}
@@ -64,37 +65,9 @@ func (mg *serviceGenerator) writeServer() error {
 	return t.Execute(w, md)
 }
 
-func (sg *serviceGenerator) serverTemplate() (*template.Template, error) {
-	res, err := Asset("assets/templates/server.tmpl")
-	if err != nil {
-		return nil, err
-	}
-	t := template.New("template")
-	return t.Parse(string(res))
-}
-
-func (mg *serviceGenerator) writeTransport() error {
-	md := mg.Meta
-	n := fmt.Sprintf("%stransport.go", md.SingularLowercase)
-	f := filepath.Join(md.PackageDir, "pkg", md.ServicePkgPath, n)
-	log.Printf("Service file: %s\n", f)
-
-	w, err := getFileWriter(f, mg.force)
-	if err != nil {
-		return err
-	}
-	defer w.Close()
-
-	t, err := mg.transportTemplate()
-	if err != nil {
-		return err
-	}
-
-	return t.Execute(w, md)
-}
-
-func (sg *serviceGenerator) transportTemplate() (*template.Template, error) {
-	res, err := Asset("assets/templates/transport.tmpl")
+func (sg *serviceGenerator) template(name string) (*template.Template, error) {
+	path := fmt.Sprintf("assets/templates/%s.tmpl", name)
+	res, err := Asset(path)
 	if err != nil {
 		return nil, err
 	}
