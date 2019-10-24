@@ -1,0 +1,143 @@
+package {{ .ServicePkgPath }}
+
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+)
+
+const (
+  // Comment if already defined
+	createErr = "Cannot create entity"
+	getAllErr = "Cannot get entity"
+	getErr    = "Cannot get entity"
+	updateErr = "Cannot update entity"
+	deleteErr = "Cannot delete entity"
+)
+
+func (a *Auth) Create{{.SingularPascalCase}}JSON(w http.ResponseWriter, r *http.Request) {
+	var req Create{{.SingularPascalCase}}Req
+	var res Create{{.SingularPascalCase}}Res
+
+	// Decode
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		a.Log().Error(err)
+		a.writeResponse(w, res)
+		return
+	}
+
+	// Service
+	err = a.Create{{.SingularPascalCase}}(req, &res)
+	if err != nil {
+		a.Log().Error(err)
+		a.writeResponse(w, res)
+		return
+	}
+
+	// Output
+	a.writeResponse(w, res)
+}
+
+func (a *Auth) Get{{ .PluralPascalCase }}JSON(w http.ResponseWriter, r *http.Request) {
+	var req Get{{ .PluralPascalCase }}Req
+	var res Get{{ .PluralPascalCase }}Res
+
+	// Service
+	err := a.Get{{ .PluralPascalCase }}(req, &res)
+	if err != nil {
+		a.Log().Error(err)
+		a.writeResponse(w, res)
+		return
+	}
+
+	// Output
+	a.writeResponse(w, res)
+}
+
+func (a *Auth) Get{{.SingularPascalCase}}JSON(w http.ResponseWriter, r *http.Request) {
+	var req Get{{.SingularPascalCase}}Req
+	var res Get{{.SingularPascalCase}}Res
+
+	ctx := r.Context()
+	slug, ok := ctx.Value({{.SingularLowercase}}CtxKey).(string)
+	if !ok {
+		e := errors.New("invalid slug")
+		a.Log().Error(e)
+		a.writeResponse(w, res)
+		return
+	}
+
+	// Service
+	req.Slug = slug
+	err := a.Get{{.SingularPascalCase}}(req, &res)
+	if err != nil {
+		a.Log().Error(err)
+		a.writeResponse(w, res)
+		return
+	}
+
+	// Output
+	a.writeResponse(w, res)
+}
+
+func (a *Auth) Update{{.SingularPascalCase}}JSON(w http.ResponseWriter, r *http.Request) {
+	var req Update{{.SingularPascalCase}}Req
+	var res Update{{.SingularPascalCase}}Res
+
+	ctx := r.Context()
+	slug, ok := ctx.Value({{.SingularLowercase}}CtxKey).(string)
+	if !ok {
+		e := errors.New("invalid slug")
+		a.Log().Error(e)
+		a.writeResponse(w, res)
+		return
+	}
+
+	// Decode
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		a.Log().Error(err)
+		a.writeResponse(w, res)
+		return
+	}
+
+	// Service
+	req.Identifier.Slug = slug
+	err = a.Update{{.SingularPascalCase}}(req, &res)
+	if err != nil {
+		a.Log().Error(err)
+		a.writeResponse(w, res)
+		return
+	}
+
+	// Output
+	a.writeResponse(w, res)
+}
+
+func (a *Auth) Delete{{.SingularPascalCase}}JSON(w http.ResponseWriter, r *http.Request) {
+	var req Delete{{.SingularPascalCase}}Req
+	var res Delete{{.SingularPascalCase}}Res
+
+	ctx := r.Context()
+	slug, ok := ctx.Value({{.SingularLowercase}}CtxKey).(string)
+	if !ok {
+		e := errors.New("invalid slug")
+		a.Log().Error(e)
+		a.writeResponse(w, res)
+		return
+	}
+
+	// Service
+	req.Identifier.Slug = slug
+	err := a.Delete{{.SingularPascalCase}}(req, &res)
+	if err != nil {
+		e := errors.New("invalid slug")
+		a.Log().Error(e)
+		a.writeResponse(w, res)
+		return
+	}
+
+	// Output
+	a.writeResponse(w, res)
+}
