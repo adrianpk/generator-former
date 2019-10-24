@@ -37,11 +37,11 @@ func (mg *serviceGenerator) updateMetadata() {
 }
 
 func (mg *serviceGenerator) write() error {
-	mg.writeFile("service")
+	mg.writeFile("server")
 	mg.writeFile("transport")
-	err := mg.writeFile("endpoint")
-	//mg.writeFile("helper")
-	//mg.writeiFile("test")
+	mg.writeFile("endpoint")
+	err := mg.writeFile("helper")
+	//mg.writeFile("test")
 	return err
 }
 
@@ -49,6 +49,7 @@ func (mg *serviceGenerator) writeFile(name string) error {
 	md := mg.Meta
 	n := fmt.Sprintf("%s%s.go", md.SingularLowercase, name)
 	f := filepath.Join(md.PackageDir, "pkg", md.ServicePkgPath, n)
+
 	log.Printf("%s file: %s\n", strings.Title(strings.ToLower(name)), f)
 
 	w, err := getFileWriter(f, mg.force)
