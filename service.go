@@ -40,7 +40,8 @@ func (mg *serviceGenerator) write() error {
 	mg.writeFile("server")
 	mg.writeFile("transport")
 	mg.writeFile("endpoint")
-	err := mg.writeFile("helper")
+	mg.writeFile("helper")
+	err := mg.writeFile("service")
 	//mg.writeFile("test")
 	return err
 }
