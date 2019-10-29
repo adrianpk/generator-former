@@ -2,7 +2,7 @@
 Resource files generator.
 
 ## Notes
-This provisional generator is based on a previous one from another project to quickly get out of trouble in a third project. It is not a very elegant implementation, so it will be reimplemented later.
+This provisional generator is based on a previous one from another project to quickly get out of trouble in a third project. It is not a very elegant implementation, and I'm working in an alternative implementation.
 
 ## Install
 
