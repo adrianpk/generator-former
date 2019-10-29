@@ -2,7 +2,7 @@
 Resource files generator.
 
 ## Notes
-This generator is being superseded by a a new one that is being integrated into a new command line tool.
+This generator will be superseded by a another one that is currently being integrated into a new command line tool.
 
 ## Install
 
