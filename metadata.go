@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -14,7 +13,6 @@ import (
 
 	"github.com/fatih/camelcase"
 	"github.com/gedex/inflector"
-	"github.com/twinj/uuid"
 )
 
 type (
@@ -56,6 +54,17 @@ type (
 		TestInsertValueVars string
 		TestUpdateValueVars string
 		TestJSONVars        string
+		// New
+		// Values
+		SvcTestCreateMap  string
+		SvcTestUpdateMap  string
+		SvcTestSample1Map string
+		SvcTestSample2Map string
+		// Struct
+		SvcTestCreateStruct  string
+		SvcTestUpdateStruct  string
+		SvcTestSample1Struct string
+		SvcTestSample2Struct string
 	}
 
 	propDef struct {
@@ -95,10 +104,6 @@ const (
 	letterIdxBits = 6                    // 6 bits to represent a letter index
 	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
-)
-
-var (
-	r = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
 func (g *gen) procMetadata() error {
@@ -415,6 +420,10 @@ func (property *propDef) setTypes() {
 	}
 }
 
+func (property *propDef) hasSafeTypeMaker() bool {
+	return property.SafeTypeMaker != ""
+}
+
 func toCamelCase(str string) string {
 	camelCased := toCamelCaseString(str)
 	splitted := camelcase.Split(camelCased)
@@ -583,90 +592,6 @@ func toDashedCase(str string) string {
 	dashed := matchFirstCap.ReplaceAllString(str, "${1}-${2}")
 	dashed = matchAllCap.ReplaceAllString(dashed, "${1}-${2}")
 	return strings.ToLower(dashed)
-}
-
-func generateUUID() uuid.UUID {
-	return uuid.NewV4()
-}
-
-func generateUUIDString() string {
-	return fmt.Sprintf("%v", generateUUID())
-}
-
-func generateTestUUIDString(index int) string {
-	if index < 6 {
-		return fmt.Sprintf("%v%d", "00000000-0000-0000-0000-00000000000", index)
-	}
-	return fmt.Sprintf("%v", generateUUID())
-}
-
-// BoolGen - Bool generator
-type BoolGen struct {
-	src       rand.Source
-	cache     int64
-	remaining int
-}
-
-func newBoolGen() *BoolGen {
-	return &BoolGen{src: rand.NewSource(time.Now().UnixNano())}
-}
-
-func (b *BoolGen) dampleBool() bool {
-	if b.remaining == 0 {
-		b.cache, b.remaining = b.src.Int63(), 63
-	}
-	result := b.cache&0x01 == 1
-	b.cache >>= 1
-	b.remaining--
-	return result
-}
-
-func sampleInt(max int) int {
-	return r.Intn(max)
-}
-
-func sampleDecimal(max int) float32 {
-	if max == 0 {
-		max = 2
-	} else if max < 0 {
-		max = -max - 1
-	} else {
-		max = max + 1
-	}
-	return float32(max)*r.Float32() - 1
-}
-
-func sampleString(prefix string, prefixLength, maxLength int) string {
-	pl := min(len(prefix), prefixLength)
-	p := prefix[0:pl]
-	rl := maxLength - pl
-	s := randString(rl)
-	return fmt.Sprintf("%s%s", p, s)
-}
-
-func min(x, y int) int {
-	if x < y {
-		return x
-	}
-	return y
-}
-
-func randString(n int) string {
-	b := make([]byte, n)
-	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
-	for i, cache, remain := n-1, r.Int63(), letterIdxMax; i >= 0; {
-		if remain == 0 {
-			cache, remain = r.Int63(), letterIdxMax
-		}
-		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
-			b[i] = letterBytes[idx]
-			i--
-		}
-		cache >>= letterIdxBits
-		remain--
-	}
-
-	return string(b)
 }
 
 func ensureDir(dirPath string) {

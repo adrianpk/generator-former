@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func (a *Auth) Create{{.SingularPascalCase}}JSON(w http.ResponseWriter, r *http.Request) {
+func (a *Auth) Create{{.SingularPascalCase}}(w http.ResponseWriter, r *http.Request) {
 	var req Create{{.SingularPascalCase}}Req
 	var res Create{{.SingularPascalCase}}Res
 
@@ -30,7 +30,7 @@ func (a *Auth) Create{{.SingularPascalCase}}JSON(w http.ResponseWriter, r *http.
 	a.writeResponse(w, res)
 }
 
-func (a *Auth) Get{{ .PluralPascalCase }}JSON(w http.ResponseWriter, r *http.Request) {
+func (a *Auth) Get{{ .PluralPascalCase }}(w http.ResponseWriter, r *http.Request) {
 	var req Get{{ .PluralPascalCase }}Req
 	var res Get{{ .PluralPascalCase }}Res
 
@@ -46,7 +46,7 @@ func (a *Auth) Get{{ .PluralPascalCase }}JSON(w http.ResponseWriter, r *http.Req
 	a.writeResponse(w, res)
 }
 
-func (a *Auth) Get{{.SingularPascalCase}}JSON(w http.ResponseWriter, r *http.Request) {
+func (a *Auth) Get{{.SingularPascalCase}}(w http.ResponseWriter, r *http.Request) {
 	var req Get{{.SingularPascalCase}}Req
 	var res Get{{.SingularPascalCase}}Res
 
@@ -72,7 +72,7 @@ func (a *Auth) Get{{.SingularPascalCase}}JSON(w http.ResponseWriter, r *http.Req
 	a.writeResponse(w, res)
 }
 
-func (a *Auth) Update{{.SingularPascalCase}}JSON(w http.ResponseWriter, r *http.Request) {
+func (a *Auth) Update{{.SingularPascalCase}}(w http.ResponseWriter, r *http.Request) {
 	var req Update{{.SingularPascalCase}}Req
 	var res Update{{.SingularPascalCase}}Res
 
@@ -106,7 +106,7 @@ func (a *Auth) Update{{.SingularPascalCase}}JSON(w http.ResponseWriter, r *http.
 	a.writeResponse(w, res)
 }
 
-func (a *Auth) Delete{{.SingularPascalCase}}JSON(w http.ResponseWriter, r *http.Request) {
+func (a *Auth) Delete{{.SingularPascalCase}}(w http.ResponseWriter, r *http.Request) {
 	var req Delete{{.SingularPascalCase}}Req
 	var res Delete{{.SingularPascalCase}}Res
 
