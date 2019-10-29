@@ -1,0 +1,463 @@
+package auth
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"os"
+	"testing"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/jmoiron/sqlx"
+	"gitlab.com/mikrowezel/backend/config"
+	"gitlab.com/mikrowezel/backend/db"
+	"gitlab.com/mikrowezel/backend/granica/internal/migration"
+	"gitlab.com/mikrowezel/backend/granica/internal/model"
+	"gitlab.com/mikrowezel/backend/granica/internal/repo"
+	"gitlab.com/mikrowezel/backend/granica/pkg/auth"
+	"gitlab.com/mikrowezel/backend/log"
+	mig "gitlab.com/mikrowezel/backend/migration"
+	mod "gitlab.com/mikrowezel/backend/model"
+	svc "gitlab.com/mikrowezel/backend/service"
+)
+
+var (
+  // Create
+{{.SvcTestCreateMap}}
+
+  // Update
+  update{{.SingularPascalCase}}Valid = map[string]interface{}{
+  {{.SvcTestUpdateMap}}
+  }
+
+  // Sample 1
+  sample{{.SingularPascalCase}}1 = map[string]interface{}{
+  {{.SvcTestSample1Map}}
+  }
+
+  // Sample 2
+  sample{{.SingularPascalCase}}Valid = map[string]interface{}{
+  {{.SvcTestSample2Map}}
+  }
+)
+
+func TestMain(m *testing.M) {
+	mgr := setup()
+	code := m.Run()
+	teardown(mgr)
+	os.Exit(code)
+}
+
+// TestCreate{{.SingularPascalCase}} tests {{.SingularLowercase}} creation.
+func TestCreate{{.SingularPascalCase}}(t *testing.T) {
+	// Setup
+{{.SvcTestCreateStruct}}
+
+	var res Create{{.SingularPascalCase}}Res
+
+	ctx := context.Background()
+	cfg := testConfig()
+	log := testLogger()
+
+	// Repo
+	userRepo, err := testRepo(ctx, cfg, log, "repo-handler")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	// Auth
+	a := testAuth(ctx, cfg, log, "auth-handler", userRepo)
+
+	// Test
+	err = a.Create{{.SingularPascalCase}}(req, &res)
+	if err != nil {
+		t.Errorf("create {{.SingularLowercase}} error: %s", err.Error())
+	}
+
+	// Verify
+	{{.SingularLowercase}} := res.{{.SingularPascalCase}}
+	{{.SingularLowercase}}Verify, err := get{{.SingularPascalCase}}BySlug({{.SingularLowercase}}.Slug, cfg)
+	if err != nil {
+		t.Errorf("cannot get {{.SingularLowercase}} from database: %s", err.Error())
+	}
+
+	if {{.SingularLowercase}}Verify == nil {
+		t.Errorf("cannot get {{.SingularLowercase}} from database")
+	}
+
+	if !isSame{{.SingularPascalCase}}({{.SingularLowercase}}, *{{.SingularLowercase}}Verify) {
+		t.Logf("%+v\n", spew.Sdump({{.SingularLowercase}}))
+		t.Logf("%+v\n", spew.Sdump({{.SingularLowercase}}Verify))
+
+		t.Error("{{.SingularPascalCase}} data and its verification does not match.")
+	}
+}
+
+// TestGet{{.PluralPascalCase}} tests get all {{.PluralLowercase}}.
+func TestGet{{.PluralPascalCase}}(t *testing.T) {
+	// Prerequisites
+	_, err := createSample{{.PluralPascalCase}}()
+	if err != nil {
+		t.Errorf("error creating sample {{.PluralLowercase}}: %s", err.Error())
+	}
+
+	// Setup
+	req := Get{{.PluralPascalCase}}Req{}
+
+	var res Get{{.PluralPascalCase}}Res
+
+	ctx := context.Background()
+	cfg := testConfig()
+	log := testLogger()
+
+	// Repo
+	userRepo, err := testRepo(ctx, cfg, log, "repo-handler")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	// Auth
+	a := testAuth(ctx, cfg, log, "auth-handler", userRepo)
+
+	// Test
+	err = a.Get{{.PluralPascalCase}}(req, &res)
+	if err != nil {
+		t.Errorf("get {{.PluralLowercase}} error: %s", err.Error())
+	}
+
+	// Verify
+	v{{.PluralPascalCase}} := res.{{.PluralPascalCase}}
+	if v{{.PluralPascalCase}} == nil {
+		t.Error("no response")
+	}
+
+	if res.Error != "" {
+		t.Errorf("Response error: %s", res.Error)
+	}
+
+	qty := len(v{{.PluralPascalCase}})
+	if qty != 2 {
+		t.Errorf("expecting two {{.PluralLowercase}} got %d", qty)
+	}
+
+	if v{{.PluralPascalCase}}[0].Slug != {{.SingularLowercase}}Sample1["slug"] || v{{.PluralPascalCase}}[1].Slug != {{.SingularLowercase}}Sample2["slug"] {
+		t.Error("obtained values do not match expected ones")
+	}
+}
+
+// TestGet{{.SingularPascalCase}} tests get {{.PluralLowercase}} by slug.
+func TestGet{{.SingularPascalCase}}(t *testing.T) {
+	// Prerequisites
+	{{.PluralLowercase}}, err := createSample{{.PluralPascalCase}}()
+	if err != nil {
+		t.Errorf("error creating sample {{.PluralLowercase}}: %s", err.Error())
+	}
+
+	// Setup
+	req := Get{{.SingularPascalCase}}Req{
+		Identifier{
+			Slug: {{.PluralLowercase}}[0].Slug.String,
+		},
+	}
+
+	var res Get{{.SingularPascalCase}}Res
+
+	ctx := context.Background()
+	cfg := testConfig()
+	log := testLogger()
+
+	r, err := repo.NewHandler(ctx, cfg, log, "repo-handler")
+	if err != nil {
+		t.Errorf("cannot initialize repo handler: %s", err.Error())
+	}
+	r.Connect()
+
+	// Repo
+	userRepo, err := testRepo(ctx, cfg, log, "repo-handler")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	// Auth
+	a := testAuth(ctx, cfg, log, "auth-handler", userRepo)
+
+	// Test
+	err = a.Get{{.SingularPascalCase}}(req, &res)
+	if err != nil {
+		t.Errorf("get {{.SingularLowercase}} error: %s", err.Error())
+	}
+
+	// Verify
+	if res.Error != "" {
+		t.Errorf("Response error: %s", res.Error)
+	}
+
+	{{.SingularLowercase}}Res := res.{{.SingularPascalCase}}
+	if {{.SingularLowercase}}Res.Name != {{.SingularLowercase}}Sample1["name"] {
+		t.Error("obtained values do not match expected ones")
+	}
+}
+
+// TestUpdate{{.SingularPascalCase}} {{.SingularLowercase}} repo update.
+func TestUpdate{{.SingularPascalCase}}(t *testing.T) {
+	// Prerequisites
+	{{.PluralLowercase}}, err := createSample{{.PluralPascalCase}}()
+
+	if err != nil {
+		t.Errorf("error creating sample {{.PluralLowercase}}: %s", err.Error())
+	}
+
+	// Setup
+	{{.SingularLowercase}} := {{.PluralLowercase}}[0]
+
+{{.SvcTestUpdateStruct}}
+
+	var res Update{{.SingularPascalCase}}Res
+
+	ctx := context.Background()
+	cfg := testConfig()
+	log := testLogger()
+
+	// Repo
+	userRepo, err := testRepo(ctx, cfg, log, "repo-handler")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	// Auth
+	a := testAuth(ctx, cfg, log, "auth-handler", userRepo)
+
+	// Test
+	err = a.Update{{.SingularPascalCase}}(req, &res)
+	if err != nil {
+		t.Errorf("update {{.SingularLowercase}} error: %s", err.Error())
+	}
+
+	// Verify
+	{{.SingularLowercase}}Res := res.{{.SingularPascalCase}}
+	{{.SingularLowercase}}Verify, err := get{{.SingularPascalCase}}BySlug({{.SingularLowercase}}Res.Slug, cfg)
+	if err != nil {
+		t.Errorf("cannot get {{.SingularLowercase}} from database: %s", err.Error())
+	}
+
+	if {{.SingularLowercase}}Verify == nil {
+		t.Errorf("cannot get {{.SingularLowercase}} from database")
+	}
+
+	// TODO: Add accurate check of all updated fields.
+	if {{.SingularLowercase}}Verify.Email.String != {{.SingularLowercase}}UpdateValid["email"] {
+		t.Error("obtained values do not match expected ones")
+	}
+}
+
+// TestDelete{{.SingularPascalCase}} tests delete {{.PluralLowercase}} from repo.
+func TestDelete{{.SingularPascalCase}}(t *testing.T) {
+	// Prerequisites
+	{{.PluralLowercase}}, err := createSample{{.PluralPascalCase}}()
+	if err != nil {
+		t.Errorf("error creating sample {{.PluralLowercase}}: %s", err.Error())
+	}
+
+	// Setup
+	{{.SingularLowercase}} := {{.PluralLowercase}}[0]
+	req := Delete{{.SingularPascalCase}}Req{
+		Identifier{
+			Slug: {{.SingularLowercase}}.Slug.String,
+		},
+	}
+
+	var res Delete{{.SingularPascalCase}}Res
+
+	ctx := context.Background()
+	cfg := testConfig()
+	log := testLogger()
+
+	// Repo
+	userRepo, err := testRepo(ctx, cfg, log, "repo-handler")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	// Auth
+	a := testAuth(ctx, cfg, log, "auth-handler", userRepo)
+
+	// Test
+	err = a.Delete{{.SingularPascalCase}}(req, &res)
+	if err != nil {
+		t.Errorf("delete {{.SingularLowercase}} error: %s", err.Error())
+	}
+
+	// Verify
+	v{{.SingularPascalCase}}, err := get{{.SingularPascalCase}}BySlug({{.SingularLowercase}}.Slug.String, cfg)
+	if err != nil {
+		return
+	}
+
+	if v{{.SingularPascalCase}} == nil {
+		return
+	}
+
+	if v{{.SingularPascalCase}}.Slug.String == {{.SingularLowercase}}.Slug.String {
+		t.Error("{{.SingularLowercase}} was not deleted from database")
+	}
+}
+
+func get{{.SingularPascalCase}}BySlug(slug string, cfg *config.Config) (*model.{{.SingularPascalCase}}, error) {
+	conn, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+
+	schema := cfg.ValOrDef("pg.schema", "public")
+
+	st := `SELECT * FROM %s.{{.PluralLowercase}} WHERE slug='%s';`
+	st = fmt.Sprintf(st, schema, slug)
+
+	u := &model.{{.SingularPascalCase}}{}
+	err = conn.Get(u, st)
+	if err != nil {
+		msg := fmt.Sprintf("cannot get {{.SingularLowercase}}: %s", err.Error())
+		return nil, errors.New(msg)
+	}
+
+	return u, nil
+}
+
+func isSame{{.SingularPascalCase}}({{.SingularLowercase}} {{.SingularPascalCase}}, toCompare model.{{.SingularPascalCase}}) bool {
+	return {{.SingularLowercase}}.TenantID == toCompare.TenantID.String &&
+		{{.SingularLowercase}}.Slug == toCompare.Slug.String &&
+		{{.SingularLowercase}}.Name == toCompare.Name.String &&
+		{{.SingularLowercase}}.OwnerID == toCompare.OwnerID.String &&
+		{{.SingularLowercase}}.ParentID == toCompare.ParentID.String &&
+		{{.SingularLowercase}}.{{.SingularPascalCase}}Type == toCompare.{{.SingularPascalCase}}Type.String &&
+		{{.SingularLowercase}}.Email == toCompare.Email.String &&
+		{{.SingularLowercase}}.ShownName == toCompare.ShownName.String
+}
+
+func createSample{{.PluralPascalCase}}() ({{.PluralLowercase}} []*model.{{.SingularPascalCase}}, err error) {
+	ctx := context.Background()
+	cfg := testConfig()
+	log := testLogger()
+
+	r, err := repo.NewHandler(ctx, cfg, log, "repo-handler")
+	if err != nil {
+		return {{.PluralLowercase}}, err
+	}
+	r.Connect()
+
+{{.SvcTestSample1Struct}}
+
+	err = create{{.SingularPascalCase}}(r, {{.SingularLowercase}}1)
+	if err != nil {
+		return {{.PluralLowercase}}, err
+	}
+
+	{{.PluralLowercase}} = append({{.PluralLowercase}}, {{.SingularLowercase}}1)
+
+{{.SvcTestSample2Struct}}
+
+	err = create{{.SingularPascalCase}}(r, {{.SingularLowercase}}2)
+	if err != nil {
+		return {{.PluralLowercase}}, err
+	}
+
+	{{.PluralLowercase}} = append({{.PluralLowercase}}, {{.SingularLowercase}}2)
+
+	return {{.PluralLowercase}}, nil
+}
+
+func create{{.SingularPascalCase}}(r *repo.Repo, {{.SingularLowercase}} *model.{{.SingularPascalCase}}) error {
+	{{.SingularLowercase}}Repo, err := r.{{.SingularPascalCase}}RepoNewTx()
+	if err != nil {
+		return err
+	}
+
+	{{.SingularLowercase}}.SetCreateValues()
+	err = {{.SingularLowercase}}Repo.Create({{.SingularLowercase}})
+	if err != nil {
+		return err
+	}
+
+	err = {{.SingularLowercase}}Repo.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func setup() *mig.Migrator {
+	m := migration.GetMigrator(testConfig())
+	m.Reset()
+	//m.Migrate()
+	return m
+}
+
+func teardown(m *mig.Migrator) {
+	m.RollbackAll()
+}
+
+func testConfig() *config.Config {
+	cfg := &config.Config{}
+	values := map[string]string{
+		"pg.host":               "localhost",
+		"pg.port":               "5432",
+		"pg.schema":             "public",
+		"pg.database":           "database",
+		"pg.user":               "user",
+		"pg.password":           "password",
+		"pg.backoff.maxentries": "3",
+	}
+
+	cfg.SetNamespace("grc")
+	cfg.SetValues(values)
+	return cfg
+}
+
+func testLogger() *log.Logger {
+	return log.NewDevLogger(0, "granica", "n/a")
+}
+
+func testRepo(ctx context.Context, cfg *config.Config, log *log.Logger, name string) (*repo.Repo, error) {
+	rh, err := repo.NewHandler(ctx, cfg, log, name)
+	if err != nil {
+		return nil, err
+	}
+	rh.Connect()
+	if err != nil {
+		return nil, err
+	}
+	return rh, nil
+}
+
+func testAuth(ctx context.Context, cfg *config.Config, log *log.Logger, name string, rh *repo.Repo) *Auth {
+	a := NewWorker(ctx, cfg, log, name)
+	hs := map[string]svc.Handler{
+		rh.Name(): rh,
+	}
+	a.SetHandlers(hs)
+	return a
+}
+
+// getConn returns a connection used to
+// verify repo insert and update operations.
+func getConn() (*sqlx.DB, error) {
+	cfg := testConfig()
+	conn, err := sqlx.Open("postgres", dbURL(cfg))
+	if err != nil {
+		return nil, err
+	}
+
+	err = conn.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	return conn, nil
+}
+
+// dbURL returns a Postgres connection string.
+func dbURL(cfg *config.Config) string {
+	host := cfg.ValOrDef("pg.host", "localhost")
+	port := cfg.ValOrDef("pg.port", "5432")
+	schema := cfg.ValOrDef("pg.schema", "public")
+	db := cfg.ValOrDef("pg.database", "granica_test")
+	user := cfg.ValOrDef("pg.user", "granica")
+	pass := cfg.ValOrDef("pg.password", "granica")
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable search_path=%s", host, port, user, pass, db, schema)
+}
